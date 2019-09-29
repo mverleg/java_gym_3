@@ -55,7 +55,6 @@ public final class UniqueQueue<T> {
      * @implNote O(1)
      */
     public int size() {
-        System.out.println("size() - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         return hashLookup.size();
     }
 
@@ -67,7 +66,6 @@ public final class UniqueQueue<T> {
      * @implNote O(1) amortized, O(n) worst case
      */
     public void pushAtNewEnd(@Nonnull T item) {
-        System.out.println("pushAtNewEnd(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         // Check 'already newest' special case at beginning.
         if (newEnd != null && item.equals(newEnd.item)) {
             return;
@@ -114,7 +112,6 @@ public final class UniqueQueue<T> {
      */
     public boolean deleteItem(@Nonnull T item) {
         //TODO @mark: I think start/end detection could be easier
-        System.out.println("deleteItem(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         Node<T> node = hashLookup.get(item);
         if (node == null) {
             return false;
@@ -141,7 +138,6 @@ public final class UniqueQueue<T> {
      */
     @Nonnull
     public Optional<T> popAtOldEnd() {
-        System.out.println("popAtOldEnd() - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         // If empty.
         if (oldEnd == null) {
             assert newEnd == null;
@@ -171,7 +167,6 @@ public final class UniqueQueue<T> {
      */
     @Nonnull
     public Optional<Integer> findPosition(@Nonnull T item) {
-        System.out.println("findPosition(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         // Queue is empty.
         if (newEnd == null) {
             assert oldEnd == null;

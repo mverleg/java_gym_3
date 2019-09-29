@@ -1,12 +1,11 @@
 package solution;
 
-import java.util.LinkedHashSet;
-import java.util.Optional;
-
-import javax.annotation.Nonnull;
-
 import noedit.Data;
 import noedit.Registers;
+import org.checkerframework.checker.index.qual.Positive;
+
+import javax.annotation.Nonnull;
+import java.util.Optional;
 
 /**
  * This solution represents a special CPU cache manager. It can store and lookup data.
@@ -30,7 +29,7 @@ public class Solution {
     private final Registers registers;
     private final int totalRegisterSize;
     @Nonnull
-    private final LinkedHashSet<Data> cache;
+    private final UniqueQueue<Data> cache;
 
     public Solution(@Nonnull Registers registers) {
         this.registers = registers;
@@ -39,17 +38,16 @@ public class Solution {
             size += registers.registerSize(i);
         }
         totalRegisterSize = size;
-        cache = new LinkedHashSet<>(size);
-        //
+        cache = UniqueQueue.empty();
     }
 
     /**
      * Store the item into the first register, overflowing as necessary.
      */
     public void store(@Nonnull Data storeItem) {
-        cache.add(storeItem);
+        cache.pushAtNewEnd(storeItem);
         if (cache.size() > totalRegisterSize) {
-            //cache.
+            cache.popAtOldEnd();
         }
     }
 
@@ -58,7 +56,18 @@ public class Solution {
      */
     @Nonnull
     public Optional<Integer> lookup(@Nonnull Data searchItem) {
-        //TODO: Implement your solution here
-        throw new UnsupportedOperationException("solution not yet implemented");
+        Optional<Integer> maybePos = cache.findPosition(searchItem);
+        if (maybePos.isEmpty()) {
+            return Optional.empty();
+        }
+        int pos = maybePos.get();
+        for (int regNr = 0; regNr < registers.registerCount(); regNr++) {
+            int registerSize = registers.registerSize(regNr);
+            if (pos < registerSize) {
+                return Optional.of(regNr);
+            }
+            pos -= registerSize;
+        }
+        throw new IllegalStateException("no register found; this should not happen");
     }
 }
