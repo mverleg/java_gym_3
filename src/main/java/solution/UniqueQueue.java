@@ -1,22 +1,21 @@
 package solution;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("WeakerAccess")
 public final class UniqueQueue<T> {
 
     private static final class Node<T> {
         @Nonnull
         private final T item;
         @Nullable
-        private Node<T> older = null;
+        private Node<T> older;
         @Nullable
-        private Node<T> newer = null;
+        private Node<T> newer;
 
         private Node(@Nonnull T item, @Nullable Node<T> older, @Nullable Node<T> newer) {
             this.item = item;
@@ -70,7 +69,7 @@ public final class UniqueQueue<T> {
     public void pushAtNewEnd(@Nonnull T item) {
         System.out.println("pushAtNewEnd(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         // Check 'already newest' special case at beginning.
-        if (item.equals(newEnd)) {
+        if (newEnd != null && item.equals(newEnd.item)) {
             return;
         }
         Node<T> newNode;
@@ -85,7 +84,7 @@ public final class UniqueQueue<T> {
         }
         // The queue is not empty.
         assert oldEnd != null;
-        Node<T> existingNode = hashLookup.get(item.hashCode());
+        Node<T> existingNode = hashLookup.get(item);
         if (existingNode == null) {
             // Not in queue, insert at new end.
             newNode = Node.after(newEnd, item);
@@ -114,31 +113,25 @@ public final class UniqueQueue<T> {
      * @implNote O(1) expected, O(n) worst case
      */
     public boolean deleteItem(@Nonnull T item) {
+        //TODO @mark: I think start/end detection could be easier
         System.out.println("deleteItem(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
-        throw new NotImplementedException("todo: ");  //TODO @mark:
-//        if (!hashLookup.containsKey(item.hashCode())) {
-//            return false;
-//        }
-//        List<Node<T>> candidates = hashLookup[lookupPos];
-//        Node<T> found = null;
-//        for (int i = 0; i < candidates.size(); i++) {
-//            Node<T> candidate = candidates.get(i);
-//            if (candidate.item.equals(item)) {
-//                found = candidates.get(i);
-//                candidates.remove(i);
-//                break;
-//            }
-//        }
-//        if (found == null) {
-//            return false;
-//        }
-//        //TODO @mark: rest is guesswork
-//        if (found.older == null) {
-//            oldEnd = found.newer;
-//        } else {
-//
-//        }
-//        return true;
+        Node<T> node = hashLookup.get(item);
+        if (node == null) {
+            return false;
+        }
+        assert newEnd != null && oldEnd != null;
+        if (node.newer == null) {
+            newEnd = node.older;
+        } else {
+            node.newer.older = node.older;
+        }
+        if (node.older == null) {
+            oldEnd = node.newer;
+        } else {
+            node.older.newer = node.newer;
+        }
+        hashLookup.remove(item);
+        return true;
     }
 
     /**
@@ -221,9 +214,7 @@ public final class UniqueQueue<T> {
             current = current.newer;
             count++;
         }
-        for (int i = count; i < hashLookup.size(); i++) {
-            txt.append(", ??");
-        }
+        txt.append(", ??".repeat(Math.max(0, hashLookup.size() - count)));
         return txt.append("]").toString();
     }
 }

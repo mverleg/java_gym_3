@@ -63,7 +63,7 @@ class UniqueQueueTest {
 
         assertFalse(uq.deleteItem(6));
         assertTrue(uq.deleteItem(3));
-        assertTrue(uq.deleteItem(3));
+        assertFalse(uq.deleteItem(3));
         // 2 4
         assertEquals(2, uq.size());
         assertEquals(Optional.empty(), uq.findPosition(1));
