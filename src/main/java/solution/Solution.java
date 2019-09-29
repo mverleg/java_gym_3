@@ -1,5 +1,6 @@
 package solution;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -27,9 +28,19 @@ public class Solution {
 
     @Nonnull
     private final Registers registers;
+    private final int totalRegisterSize;
+    @Nonnull
+    private final LinkedHashSet<Data> cache;
 
     public Solution(@Nonnull Registers registers) {
         this.registers = registers;
+        int size = 0;
+        for (int i = 0; i < registers.registerCount(); i++) {
+            size += registers.registerSize(i);
+        }
+        totalRegisterSize = size;
+        cache = new LinkedHashSet<>(size);
+        //
     }
 
     /**
@@ -37,8 +48,10 @@ public class Solution {
      */
     @Nonnull
     public void store(@Nonnull Data storeItem) {
-        //TODO: Implement your solution here
-        throw new UnsupportedOperationException("solution not yet implemented");
+        cache.add(storeItem);
+        if (cache.size() > totalRegisterSize) {
+            cache.
+        }
     }
 
     /**
