@@ -5,7 +5,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,6 +27,11 @@ public final class UniqueQueue<T> {
         private static <T> Node<T> after(@Nonnull Node<T> prev, @Nonnull T item) {
             return new Node<>(item, prev, null);
         }
+
+        @Override
+        public String toString() {
+            return item.toString();
+        }
     }
 
     @Nullable
@@ -36,7 +40,7 @@ public final class UniqueQueue<T> {
     private Node<T> newEnd;
 
     @Nonnull
-    private Map<Integer, Node<T>> hashLookup;
+    private Map<T, Node<T>> hashLookup;
 
     private UniqueQueue() {
         hashLookup = new HashMap<>(4096);
@@ -52,6 +56,7 @@ public final class UniqueQueue<T> {
      * @implNote O(1)
      */
     public int size() {
+        System.out.println("size() - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         return hashLookup.size();
     }
 
@@ -63,6 +68,7 @@ public final class UniqueQueue<T> {
      * @implNote O(1) amortized, O(n) worst case
      */
     public void pushAtNewEnd(@Nonnull T item) {
+        System.out.println("pushAtNewEnd(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         // Check 'already newest' special case at beginning.
         if (item.equals(newEnd)) {
             return;
@@ -74,7 +80,7 @@ public final class UniqueQueue<T> {
             newNode = new Node<>(item, null, null);
             oldEnd = newNode;
             newEnd = newNode;
-            hashLookup.put(item.hashCode(), newNode);
+            hashLookup.put(item, newNode);
             return;
         }
         // The queue is not empty.
@@ -85,7 +91,7 @@ public final class UniqueQueue<T> {
             newNode = Node.after(newEnd, item);
             newEnd.newer = newNode;
             newEnd = newNode;
-            hashLookup.put(item.hashCode(), newNode);
+            hashLookup.put(item, newNode);
             return;
         }
         // Already in the queue, and not newest.
@@ -96,6 +102,10 @@ public final class UniqueQueue<T> {
         } else {
             oldEnd = existingNode.newer;
         }
+        existingNode.older = newEnd;
+        existingNode.newer = null;
+        newEnd.newer = existingNode;
+        newEnd = existingNode;
     }
 
     /**
@@ -104,6 +114,7 @@ public final class UniqueQueue<T> {
      * @implNote O(1) expected, O(n) worst case
      */
     public boolean deleteItem(@Nonnull T item) {
+        System.out.println("deleteItem(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         throw new NotImplementedException("todo: ");  //TODO @mark:
 //        if (!hashLookup.containsKey(item.hashCode())) {
 //            return false;
@@ -137,7 +148,27 @@ public final class UniqueQueue<T> {
      */
     @Nonnull
     public Optional<T> popAtOldEnd() {
-        throw new NotImplementedException("todo: ");  //TODO @mark:
+        System.out.println("popAtOldEnd() - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
+        // If empty.
+        if (oldEnd == null) {
+            assert newEnd == null;
+            return Optional.empty();
+        }
+        // One or more items
+        T item = oldEnd.item;
+        if (size() == 1) {
+            // Only one item.
+            newEnd = null;
+        } else {
+            // At least two items.
+            assert oldEnd.newer != null: "must be at least two items, so second-last should have a newer";
+            oldEnd.newer.older = null;
+        }
+        Node<T> nowOldest = oldEnd.newer;
+        oldEnd.newer = null;
+        oldEnd = nowOldest;
+        hashLookup.remove(item);
+        return Optional.of(item);
     }
 
     /**
@@ -147,20 +178,22 @@ public final class UniqueQueue<T> {
      */
     @Nonnull
     public Optional<Integer> findPosition(@Nonnull T item) {
+        System.out.println("findPosition(" + item + ") - " + toString());  //TODO @mark: TEMPORARY! REMOVE THIS!
         // Queue is empty.
         if (newEnd == null) {
             assert oldEnd == null;
             return Optional.empty();
         }
         // Item not in queue.
-        if (!hashLookup.containsKey(item.hashCode())) {
+        if (!hashLookup.containsKey(item)) {
             return Optional.empty();
         }
         // Item in queue.
         int index = 0;
         Node<T> current = newEnd;
+        //noinspection ConditionalBreakInInfiniteLoop
         while (true) {
-            if (current.equals(item)) {
+            if (current.item.equals(item)) {
                 break;
             }
             index++;
@@ -168,5 +201,29 @@ public final class UniqueQueue<T> {
             assert current != null: "The item should exit but was not found";
         }
         return Optional.of(index);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder txt = new StringBuilder("[");
+        Node<T> current = oldEnd;
+        boolean isFirst = true;
+        int count = 0;
+        while (current != null) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                txt.append(", ");
+            }
+            txt.append(current.older == null ? "x" : current.older).append("<");  //TODO @mark: TEMPORARY! REMOVE THIS!
+            txt.append(current).append(hashLookup.containsKey(current.item) ? "" : "!!");
+            txt.append(">").append(current.newer == null ? "x" : current.newer);  //TODO @mark: TEMPORARY! REMOVE THIS!
+            current = current.newer;
+            count++;
+        }
+        for (int i = count; i < hashLookup.size(); i++) {
+            txt.append(", ??");
+        }
+        return txt.append("]").toString();
     }
 }
