@@ -50,7 +50,7 @@ public class Solution {
     public void store(@Nonnull Data storeItem) {
         cache.add(storeItem);
         if (cache.size() > totalRegisterSize) {
-            cache.
+            //cache.
         }
     }
 
